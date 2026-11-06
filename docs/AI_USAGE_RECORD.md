@@ -33,7 +33,7 @@ the code and tests is made up (`L1`…`L6` in the CLI demo; `A`…`F`, `NOPRE`, 
 | P13 | **E1** "Act as a strict reviewer. Find any way to exceed capacity, duplicate a learner, change state on a 'no change' result, misuse the lock, or apply the skip policy inconsistently. Give the triggering inputs and don't invent issues." | Adversarial code review |
 | P14 | **E3** "Check the repository and the AI usage record for secrets, real personal data, or inputs that could crash the app or grow memory without bound." | Security / data hygiene |
 | P15 | **F4** "Act as the grader. For every deliverable and acceptance criterion, mark it present, partial or missing with evidence, and give the three weakest areas with fixes under 30 minutes." | Submission readiness review |
-| P16 | **F5** "The candidate found a defect by hand (a false `DROPPED` result for a learner who never enrolled, violating AC5) and rejected PR-001, requesting that `drop` return `NOT_REGISTERED` in that case and that the PR be resubmitted only once the full test suite passes.** | Code-review exercise (results in §4.6) |
+| P16 | **F5** "The candidate found a defect by hand (a false `DROPPED` result for a learner who never enrolled, violating AC5) and rejected PR-001, requesting that `drop` return `NOT_REGISTERED` in that case and that the PR be re-submitted only once the full test suite passes.** | Code-review exercise (results in §4.6) |
 
 The AI broke P1 into these steps: inspect the workspace and toolchain → create the Maven project →
 domain model and service → JUnit tests (including concurrency) → CLI → run and verify → documentation.
