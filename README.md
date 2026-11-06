@@ -91,7 +91,7 @@ the queue is no longer eligible, they are **skipped and removed** from the waitl
 learner is promoted instead. If they become eligible again later, they must request again, and they
 join at the **back** of the queue.
 
-Full reasoning and all assumptions are in [docs/DESIGN.md §5](docs/DESIGN.md#5-prerequisite-and-waitlist-rules-assumptions).
+Full reasoning and all assumptions are in [docs/DESIGN.md Section 5](docs/DESIGN.md#5-prerequisite-and-waitlist-rules-assumptions).
 
 ---
 
@@ -624,7 +624,7 @@ are probabilistic. Reports are written to `target/surefire-reports/`.
 
 To check that the tests actually catch bugs, the code was deliberately broken and the tests re-run.
 Eight deliberate bugs (no locking, LIFO order, capacity off-by-one, skipped prerequisite checks, OR-instead-of-AND prerequisites, skip-and-retain, and more) were each caught by the tests. Details
-are in [docs/AI_USAGE_RECORD.md §4.2](docs/AI_USAGE_RECORD.md).
+are in [docs/AI_USAGE_RECORD.md Section 4.2](docs/AI_USAGE_RECORD.md).
 
 ---
 
@@ -696,7 +696,7 @@ Every class and public method has a Javadoc comment explaining its purpose.
 |---|---|
 | [docs/DESIGN.md](docs/DESIGN.md) | understand *why* it works this way: invariants, policy choice, concurrency, persistence plan |
 | [docs/MANUAL_TEST_PLAN.md](docs/MANUAL_TEST_PLAN.md) | formally verify every acceptance criterion by hand and record pass or fail |
-| [docs/AI_USAGE_RECORD.md](docs/AI_USAGE_RECORD.md) | see how AI was used, what was accepted, edited or rejected, and the verification evidence; §6 has a **reusable prompt playbook** for doing this kind of work with AI |
+| [docs/AI_USAGE_RECORD.md](docs/AI_USAGE_RECORD.md) | see how AI was used, what was accepted, edited or rejected, and the verification evidence; Section 6 has a **reusable prompt playbook** for doing this kind of work with AI |
 | [docs/LIMITATIONS.md](docs/LIMITATIONS.md) | know what this slice does **not** handle and what to do next |
 
 ### Assessment deliverables checklist

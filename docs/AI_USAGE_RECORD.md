@@ -20,7 +20,7 @@ the code and tests is made up (`L1`…`L6` in the CLI demo; `A`…`F`, `NOPRE`, 
 |---|---|---|
 | P1 | *Initial implementation brief:* supplied the full *CourseWaitlist* assessment brief (problem statement, acceptance criteria AC1–AC7, scope boundaries, deliverables) and asked the AI to implement the scoped slice with these engineering constraints: the latest Java release and JUnit version; meaningful, self-documenting code with Javadoc/comment blocks; a conventional project and folder structure; and a step-by-step README that names the application's entry point and how to navigate the project. | Task decomposition, design, implementation, tests, documentation |
 | P2 | *Manual acceptance verification:* challenged whether passing automated tests was enough evidence on its own, and asked for a repeatable manual procedure: concrete CLI inputs and expected outputs for each acceptance criterion, so the behaviour could be checked independently by running the application itself. | Manual acceptance-test design: added `reset`/`grant`/`revoke`/`learners` CLI commands, `manual-tests/` scripts and `docs/MANUAL_TEST_PLAN.md` |
-| P3 | "Update the README so a new team member understands the context and usage; add example test scenarios showing how to execute and what to expect." (Prompted after the candidate typed `AC1` and `L1` at the CLI prompt and got `Unknown command`.) | Documentation for onboarding: rewrote README with context, glossary, rules flowchart, command and result-code reference, 9 worked scenarios with exact output, and a troubleshooting table that includes that mistake. **Verified** by replaying every `>` line from README §5 through the jar and diffing against the documented output: all 177 lines identical. |
+| P3 | "Update the README so a new team member understands the context and usage; add example test scenarios showing how to execute and what to expect." (Prompted after the candidate typed `AC1` and `L1` at the CLI prompt and got `Unknown command`.) | Documentation for onboarding: rewrote README with context, glossary, rules flowchart, command and result-code reference, 9 worked scenarios with exact output, and a troubleshooting table that includes that mistake. **Verified** by replaying every `>` line from README Section 5 through the jar and diffing against the documented output: all 177 lines identical. |
 | P4 | **A1** "Act as a senior engineer. Without writing code, list every ambiguous requirement in the CourseWaitlist brief, give 2–3 interpretations of each, and recommend one." | Requirements analysis |
 | P5 | **A2** "Convert acceptance criteria AC1–AC6 into Given/When/Then statements, one positive and one negative case each, and flag any that need an extra assumption." | Requirements → testable statements |
 | P6 | **B1** "Compare skip-and-remove with skip-and-retain for an ineligible learner at the head of the waitlist: fairness, complexity, edge cases, testability. Recommend one and name the stakeholder question to confirm." | Policy decision |
@@ -33,33 +33,33 @@ the code and tests is made up (`L1`…`L6` in the CLI demo; `A`…`F`, `NOPRE`, 
 | P13 | **E1** "Act as a strict reviewer. Find any way to exceed capacity, duplicate a learner, change state on a 'no change' result, misuse the lock, or apply the skip policy inconsistently. Give the triggering inputs and don't invent issues." | Adversarial code review |
 | P14 | **E3** "Check the repository and the AI usage record for secrets, real personal data, or inputs that could crash the app or grow memory without bound." | Security / data hygiene |
 | P15 | **F4** "Act as the grader. For every deliverable and acceptance criterion, mark it present, partial or missing with evidence, and give the three weakest areas with fixes under 30 minutes." | Submission readiness review |
-| P16 | **F5** "The candidate found a defect by hand (a false `DROPPED` result for a learner who never enrolled, violating AC5) and rejected PR-001, requesting that `drop` return `NOT_REGISTERED` in that case and that the PR be re-submitted only once the full test suite passes.** | Code-review exercise (results in §4.6) |
+| P16 | **F5** "The candidate found a defect by hand (a false `DROPPED` result for a learner who never enrolled, violating AC5) and rejected PR-001, requesting that `drop` return `NOT_REGISTERED` in that case and that the PR be re-submitted only once the full test suite passes.** | Code-review exercise (results in Section 4.6) |
 
 The AI broke P1 into these steps: inspect the workspace and toolchain → create the Maven project →
 domain model and service → JUnit tests (including concurrency) → CLI → run and verify → documentation.
 
-P4–P15 are taken from the §6 playbook. The candidate chose them and asked for them to be run against
+P4–P15 are taken from the Section 6 playbook. The candidate chose them and asked for them to be run against
 the finished project in one session. Each was executed for real. Its findings were acted on or
-rejected, and any code change was re-verified (see §1.1 and §4).
+rejected, and any code change was re-verified (see Section 1.1 and Section 4).
 
 ### 1.1 Results of P4–P17
 
 | # | Key response (summary) | Decision | Evidence / files |
 |---|---|---|---|
-| P4 | Found 6 ambiguities: (1) whether "enroll only once" means once ever or once at a time; (2) whether eligibility is re-checked at promotion; (3) skip vs retain; (4) whether a waitlisted learner can "drop"; (5) what "completed" means; (6) whether the waitlist has a cap. Items 2–4 were already covered by A3, A4 and A8. **Items 1, 5 and 6 were undocumented.** | **Accepted.** Added assumptions A12 (once *at a time*; a learner who drops may request again and joins the back of the queue), A13 (completed = in the directory's completed list) and A14 (no cap). | `DESIGN.md §5`; new test `droppedLearnerCanReenrollAtBack` |
+| P4 | Found 6 ambiguities: (1) whether "enroll only once" means once ever or once at a time; (2) whether eligibility is re-checked at promotion; (3) skip vs retain; (4) whether a waitlisted learner can "drop"; (5) what "completed" means; (6) whether the waitlist has a cap. Items 2–4 were already covered by A3, A4 and A8. **Items 1, 5 and 6 were undocumented.** | **Accepted.** Added assumptions A12 (once *at a time*; a learner who drops may request again and joins the back of the queue), A13 (completed = in the directory's completed list) and A14 (no cap). | `DESIGN.md Section 5`; new test `droppedLearnerCanReenrollAtBack` |
 | P5 | Wrote positive and negative Given/When/Then cases for AC1–AC6 and mapped each one to an existing test. Two had no matching test: "re-enroll after drop" and "positions shift when a waiter leaves". | **Accepted.** Tests added (see P10). | `CourseEnrollmentServiceTest` |
-| P6 | Retain: positions become misleading, every drop re-checks the same learners, and the rule for restoring a place is unclear. Remove: simple and consistent, but a learner who is ineligible only briefly loses their place. Recommended **remove**. Stakeholder question: "Should a learner who is temporarily ineligible keep their place for a grace period?" | **Accepted** (confirms the existing design). Stakeholder question recorded. | `DESIGN.md §5`, `LIMITATIONS.md #3` |
-| P7 | Listed 5 invariants, matching DESIGN §4. Pointed out that invariant 4 ("enrolled learners were eligible when seated") is a property of a past moment, so it can't be checked cheaply at runtime and has to be guaranteed by tests. | **Accepted, no change.** Already covered by `PrerequisitePolicy` tests. | `verifyInvariants()` checks 1–3 |
-| P8 | `synchronized` and `ReentrantLock` are both correct, and equivalent here. `ReadWriteLock` only helps `snapshot()` and adds complexity. Lock-free collections are **incorrect** because the compound operations span two collections. An actor is correct but too heavy. | **Accepted, no change.** It matches the existing D2 rejection. | §3 D2 |
+| P6 | Retain: positions become misleading, every drop re-checks the same learners, and the rule for restoring a place is unclear. Remove: simple and consistent, but a learner who is ineligible only briefly loses their place. Recommended **remove**. Stakeholder question: "Should a learner who is temporarily ineligible keep their place for a grace period?" | **Accepted** (confirms the existing design). Stakeholder question recorded. | `DESIGN.md Section 5`, `LIMITATIONS.md #3` |
+| P7 | Listed 5 invariants, matching DESIGN Section 4. Pointed out that invariant 4 ("enrolled learners were eligible when seated") is a property of a past moment, so it can't be checked cheaply at runtime and has to be guaranteed by tests. | **Accepted, no change.** Already covered by `PrerequisitePolicy` tests. | `verifyInvariants()` checks 1–3 |
+| P8 | `synchronized` and `ReentrantLock` are both correct, and equivalent here. `ReadWriteLock` only helps `snapshot()` and adds complexity. Lock-free collections are **incorrect** because the compound operations span two collections. An actor is correct but too heavy. | **Accepted, no change.** It matches the existing D2 rejection. | Section 3 D2 |
 | P9 | Explained the loop. No bug found. It noted that the loop condition `enrolled.size() < capacity` is always true right after a drop, but keeps it as a cheap safeguard. | **Rejected** the suggestion to remove the condition. It's a deliberate safeguard if a future feature (such as raising capacity) reuses the method. | `CourseEnrollmentService.promoteNextEligible` |
 | P10 | Built the matrix from the scenarios listed in the prompt and checked each against the suite. **3 had no test**: re-enroll after drop, positions shifting, capacity = 1. | **Accepted.** Added `droppedLearnerCanReenrollAtBack`, `positionsShiftWhenWaiterLeaves`, `capacityOfOne`. | `CourseEnrollmentServiceTest.FifoPromotion` |
 | P11 | All 4 concurrency tests use a start latch, so threads really race. Without the latch, early tasks finish before later ones start, and the test can pass even on broken code. **Missing race:** one learner flooding a course that is already *full* (the existing duplicate test only covered an open course). | **Accepted.** Added `concurrentDuplicateWaitlistRequestsCreateOneEntry` (20 repeats). | `CourseEnrollmentConcurrencyTest` |
-| P12 | Ran 8 mutants (§4.2). **All 8 were caught**, but M6 (waitlist duplicate check removed) and M7 (prerequisites joined with OR instead of AND) were caught by **only one test each**. | **Accepted.** Added the P11 test, which strengthens M6, and `allPrerequisitesRequiredByService`, which strengthens M7. After re-running, M6 is caught by 21 failures and M7 by 2 tests. | §4.2 |
+| P12 | Ran 8 mutants (Section 4.2). **All 8 were caught**, but M6 (waitlist duplicate check removed) and M7 (prerequisites joined with OR instead of AND) were caught by **only one test each**. | **Accepted.** Added the P11 test, which strengthens M6, and `allPrerequisitesRequiredByService`, which strengthens M7. After re-running, M6 is caught by 21 failures and M7 by 2 tests. | Section 4.2 |
 | P13 | Service: **none found** in any of the 5 categories, with each one reasoned through (lock released in `finally`; rejections return before any mutation; skip rule only in one place). CLI: `learners` was hard-coded to ids `L1`–`L9`, so it would silently hide other learners. | **Accepted the CLI finding.** Added `InMemoryLearnerDirectory.findAll()` and changed `learners` to use it. | `CommandProcessor`, test `learnersListsWholeDirectory` |
 | P14 | Scanned for secrets, keys, tokens, emails and personal data: **none** (grep hits were only the policy text in this document). Risk found: the waitlist has no cap (A14). The CLI reads one line at a time, so oversized input affects only that one line. | **Accepted.** Recorded as LIMITATIONS #11. | `LIMITATIONS.md` |
-| P15 | All deliverables and AC1–AC7 **present**. Weakest areas: (1) §5 candidate review is empty; (2) the scoring-guide file `Course-Registration-Rubric-Score.md` is not in the workspace, so the submission can't be self-scored; (3) no git history shows the work done step by step. | **Accepted as action items for the candidate.** These can't be fixed by the AI without misrepresenting who did the review. Suggested fixes: complete §5; obtain the rubric; `git init` and commit. | §5 |
-| P16 | The AI wrote PR-001, a realistic proposed change with **10 planted defects**. It checked the change compiles and that only 3 of the defects are caught by the existing tests, and withheld the answer key. **The candidate reviewed it without AI help:** ran the existing suite on a copy (138 tests, 7 failures, 1 error, BUILD FAILURE) and tested the CLI by hand, finding that `drop L2` returned `DROPPED` for a learner who never enrolled. | **Candidate rejected PR-001.** Requested change: `drop` must return `NOT_REGISTERED`, not `DROPPED`, when the learner is neither enrolled nor waitlisted (AC5). Resubmit once the existing test suite passes in full. Score: 1 caught, 2 surfaced by tests, 7 missed (only findable by reading). | §4.6; `review-exercise/` |
-| P17 | Wrote `manual-tests/run-and-record.ps1` and the expected-output files. The AI's own validation run first reported **FAIL**, which exposed two real bugs: the wrong working folder, and a PowerShell byte-order mark that corrupted piped input. Both were fixed, and the CLI now strips a leading BOM. **The candidate then ran it under their own name:** 137/137 automated, 25/25 manual, Overall PASS. | **Accepted.** | §3 D13; §4.5a; `docs/MANUAL_TEST_RESULTS.md` |
+| P15 | All deliverables and AC1–AC7 **present**. Weakest areas: (1) Section 5 candidate review is empty; (2) the scoring-guide file `Course-Registration-Rubric-Score.md` is not in the workspace, so the submission can't be self-scored; (3) no git history shows the work done step by step. | **Accepted as action items for the candidate.** These can't be fixed by the AI without misrepresenting who did the review. Suggested fixes: complete Section 5; obtain the rubric; `git init` and commit. | Section 5 |
+| P16 | The AI wrote PR-001, a realistic proposed change with **10 planted defects**. It checked the change compiles and that only 3 of the defects are caught by the existing tests, and withheld the answer key. **The candidate reviewed it without AI help:** ran the existing suite on a copy (138 tests, 7 failures, 1 error, BUILD FAILURE) and tested the CLI by hand, finding that `drop L2` returned `DROPPED` for a learner who never enrolled. | **Candidate rejected PR-001.** Requested change: `drop` must return `NOT_REGISTERED`, not `DROPPED`, when the learner is neither enrolled nor waitlisted (AC5). Resubmit once the existing test suite passes in full. Score: 1 caught, 2 surfaced by tests, 7 missed (only findable by reading). | Section 4.6; `review-exercise/` |
+| P17 | Wrote `manual-tests/run-and-record.ps1` and the expected-output files. The AI's own validation run first reported **FAIL**, which exposed two real bugs: the wrong working folder, and a PowerShell byte-order mark that corrupted piped input. Both were fixed, and the CLI now strips a leading BOM. **The candidate then ran it under their own name:** 137/137 automated, 25/25 manual, Overall PASS. | **Accepted.** | Section 3 D13; Section 4.5a; `docs/MANUAL_TEST_RESULTS.md` |
 
 ## 2. AI contributions (response summaries)
 
@@ -67,10 +67,10 @@ rejected, and any code change was re-verified (see §1.1 and §4).
 |---|---|---|
 | Toolchain discovery | Found an empty folder, JDK 27.0.1 and no Maven on the PATH. Looked up the latest stable versions on Maven Central (JUnit 6.1.3, compiler plugin 3.16.0, surefire 3.6.1). | `pom.xml` |
 | Architecture | One service per offering with a read-only `LearnerDirectory` port, immutable records, and result codes instead of exceptions. | `service/`, `repository/`, `domain/` |
-| Waitlist policy | Proposed **skip-and-remove** for learners who are ineligible when they reach the head of the queue, with eligibility re-checked at promotion. Gave the reasoning: no stale entries and positions only move forward. | `CourseEnrollmentService`, `DESIGN.md §5` |
+| Waitlist policy | Proposed **skip-and-remove** for learners who are ineligible when they reach the head of the queue, with eligibility re-checked at promotion. Gave the reasoning: no stale entries and positions only move forward. | `CourseEnrollmentService`, `DESIGN.md Section 5` |
 | Concurrency | A single `ReentrantLock` per offering around every operation. | `CourseEnrollmentService` |
 | Tests | Behaviour tests grouped by acceptance criterion, 5 repeated concurrency tests, domain-validation and CLI tests. 137 executions from 47 methods (109 after P1, 112 after P2, 137 after P10–P13). | `src/test/...` |
-| Prompt playbook | At the candidate's request, wrote §6: 21 reusable prompts in six phases, with a check for each answer. 12 of them were then run as P4–P15. | `docs/AI_USAGE_RECORD.md §6` |
+| Prompt playbook | At the candidate's request, wrote Section 6: 21 reusable prompts in six phases, with a check for each answer. 12 of them were then run as P4–P15. | `docs/AI_USAGE_RECORD.md Section 6` |
 | Manual verification (P2) | Found that the AC4 "became ineligible while waiting" case couldn't be reached from the CLI. Added test-support commands that change transcripts in the learner directory only (never roster or waitlist state), plus one input script per AC with expected outputs. | `cli/`, `manual-tests/`, `docs/MANUAL_TEST_PLAN.md` |
 | Docs | README, design spec, limitations, manual test plan, this record. | `README.md`, `docs/` |
 
@@ -78,7 +78,7 @@ rejected, and any code change was re-verified (see §1.1 and §4).
 
 | # | Suggestion / draft | Outcome | Reason |
 |---|---|---|---|
-| D1 | Policy option: *retain* an ineligible learner in the queue and skip over them | **Rejected** | They would be re-checked on every drop, hold misleading positions, and the rule for getting their place back would be unclear. Skip-and-remove was chosen (DESIGN §5). |
+| D1 | Policy option: *retain* an ineligible learner in the queue and skip over them | **Rejected** | They would be re-checked on every drop, hold misleading positions, and the rule for getting their place back would be unclear. Skip-and-remove was chosen (DESIGN Section 5). |
 | D2 | Lock-free design using `ConcurrentLinkedQueue` + `ConcurrentHashMap.newKeySet()` | **Rejected** | Each collection is thread-safe on its own, but "check capacity → seat" and "drop → promote" span two collections, so they would not be atomic. |
 | D3 | `ArrayDeque` for the waitlist | **Edited** to `LinkedHashSet` (`SequencedSet`) | It needs O(1) duplicate checks and O(1) removal by id when a waiting learner drops. Java 21+ `SequencedSet` gives FIFO `removeFirst()` as well. |
 | D4 | Check eligibility before the duplicate check | **Edited** to duplicate check first | Otherwise a waitlisted learner whose record changed would get `PREREQUISITE_NOT_MET` instead of their real standing (`ALREADY_WAITLISTED`). |
@@ -88,8 +88,8 @@ rejected, and any code change was re-verified (see §1.1 and §4).
 | D8 | Download a standalone Maven distribution | **Not done** (blocked by the environment's permission policy) | Used the Maven 3.9.16 bundled with IntelliJ IDEA 2026.3 instead, then generated the Maven Wrapper (`mvnw`) so reviewers don't need Maven installed. |
 | D9 | (P9) Remove the "always true" `enrolled.size() < capacity` loop guard | **Rejected** | Kept as a safeguard for future reuse of the method (e.g. raising capacity). |
 | D10 | (P13) CLI `learners` hard-coded to `L1`–`L9` | **Edited** | Replaced with `InMemoryLearnerDirectory.findAll()`. |
-| D11 | (P15) Have the AI fill in §5 "candidate's independent review" | **Rejected** | §5 must record the candidate's own judgement. |
-| D12 | (candidate request) Replace the recorded prompts with a set of better-sounding prompts that were never run | **Rejected** | It would misrepresent the record. Instead, the request that produced the §6 playbook was taken out of §1 at the candidate's request (it is described in §2), and twelve playbook prompts were **actually run** as P4–P15. |
+| D11 | (P15) Have the AI fill in Section 5 "candidate's independent review" | **Rejected** | Section 5 must record the candidate's own judgement. |
+| D12 | (candidate request) Replace the recorded prompts with a set of better-sounding prompts that were never run | **Rejected** | It would misrepresent the record. Instead, the request that produced the Section 6 playbook was taken out of Section 1 at the candidate's request (it is described in Section 2), and twelve playbook prompts were **actually run** as P4–P15. |
 | D13 | (P17) First version of `run-and-record.ps1` | **Edited** after the AI's own validation run reported **FAIL** (2 of 25 manual cases, plus no automated summary) | Two real defects: (1) `cmd.exe` started outside the project folder, so `mvnw.cmd` wasn't found; (2) Windows PowerShell prefixed piped input with a UTF-8 byte-order mark, which corrupted the first command of each script. Fixed the script (project-root working directory, UTF-8 without BOM). Also hardened `WaitlistCli` to strip a leading BOM, so `Get-Content … \| java -jar …` works for every user. Re-run: 137/137 automated, 25/25 manual, PASS. |
 
 ## 4. Verification evidence
@@ -256,7 +256,7 @@ Full answer key: [review-exercise/README.md](../review-exercise/README.md#answer
 > the "Used?" box is ticked and the outcome is recorded below.
 >
 > **How to use it:** run a prompt, review the response against its *Check the answer* list, then tick
-> **Used?** and fill in the outcome line. If you act on the response, add a row to §5 as well.
+> **Used?** and fill in the outcome line. If you act on the response, add a row to Section 5 as well.
 > Never paste credentials, real student data or company-internal code into a prompt.
 
 ### 6.1 How to write a good prompt for this kind of work
@@ -297,8 +297,8 @@ learner reaches the front of the queue.
 ```
 **Check the answer:** it should at least flag (a) whether eligibility is re-checked at promotion,
 (b) skip vs retain for ineligible learners, (c) whether a waitlisted learner can "drop", and (d) what
-counts as an invalid request. Compare it with [DESIGN.md §5](DESIGN.md). Anything it found that §5 doesn't cover is a gap to close.
-**Used?** ☑ **Outcome:** run as P4; see §1.1.
+counts as an invalid request. Compare it with [DESIGN.md Section 5](DESIGN.md). Anything it found that Section 5 doesn't cover is a gap to close.
+**Used?** ☑ **Outcome:** run as P4; see Section 1.1.
 
 #### A2. Turn acceptance criteria into testable statements
 ```text
@@ -310,7 +310,7 @@ Flag any criterion you could not make testable without an extra assumption, and 
 ```
 **Check the answer:** each statement must map to a test in `CourseEnrollmentServiceTest` or a manual
 case in [MANUAL_TEST_PLAN.md](MANUAL_TEST_PLAN.md). Any statement that doesn't map is a missing test.
-**Used?** ☑ **Outcome:** run as P5; see §1.1.
+**Used?** ☑ **Outcome:** run as P5; see Section 1.1.
 
 ---
 
@@ -328,8 +328,8 @@ learner regains eligibility), and how each would be tested. Then recommend one, 
 product question I should confirm with a stakeholder before committing.
 ```
 **Check the answer:** does it notice that with retain, "position 1" can be misleading indefinitely? Does
-it raise the problem of a learner who is ineligible only briefly? Record the policy you choose and why in §5.
-**Used?** ☑ **Outcome:** run as P6; see §1.1.
+it raise the problem of a learner who is ineligible only briefly? Record the policy you choose and why in Section 5.
+**Used?** ☑ **Outcome:** run as P6; see Section 1.1.
 
 #### B2. Derive invariants
 ```text
@@ -340,9 +340,9 @@ Given this in-memory model for ONE course offering:
 List the invariants that must hold after every enroll and drop operation. For each invariant:
 state it formally, explain which operation could break it, and propose a cheap runtime check.
 ```
-**Check the answer:** compare with DESIGN.md §4 (capacity bound, uniqueness across both collections,
+**Check the answer:** compare with DESIGN.md Section 4 (capacity bound, uniqueness across both collections,
 no idle seat while learners wait, everyone enrolled was eligible when seated). Missing or extra invariants are worth discussing.
-**Used?** ☑ **Outcome:** run as P7; see §1.1.
+**Used?** ☑ **Outcome:** run as P7; see Section 1.1.
 
 #### B3. Design the API and result model
 ```text
@@ -367,7 +367,7 @@ operations, and what does it cost? Recommend one and describe how it maps to a d
 ```
 **Check the answer:** it must explain why option 4 is **not** correct on its own: each collection is
 thread-safe, but the compound operations across them are not atomic. If it recommends lock-free collections without addressing that, reject the answer.
-**Used?** ☑ **Outcome:** run as P8; see §1.1.
+**Used?** ☑ **Outcome:** run as P8; see Section 1.1.
 
 ---
 
@@ -403,7 +403,7 @@ surprised you or that you think might be a bug, with an input that would trigger
 <paste promoteNextEligible() or any method you didn't write yourself>
 ```
 **Check the answer:** if you can't follow the explanation, don't merge the code. Any "might be a bug" item becomes a test.
-**Used?** ☑ **Outcome:** run as P9; see §1.1.
+**Used?** ☑ **Outcome:** run as P9; see Section 1.1.
 
 ---
 
@@ -419,7 +419,7 @@ full, learner becoming ineligible while waiting, all waiting learners ineligible
 dropping, repeated drop, unknown learner, null/blank id. Do not write code.
 ```
 **Check the answer:** tick each row off against existing tests. Rows with no test are gaps to fill.
-**Used?** ☑ **Outcome:** run as P10; see §1.1.
+**Used?** ☑ **Outcome:** run as P10; see Section 1.1.
 
 #### D2. Write focused JUnit 6 tests
 ```text
@@ -441,7 +441,7 @@ ExecutorService in try-with-resources, @RepeatedTest, and a @Timeout. Explain wh
 a start gate might pass even on broken code.
 ```
 **Check the answer:** remove the lock and confirm the test **fails** (see D4). A concurrency test that still passes on broken code proves nothing.
-**Used?** ☑ **Outcome:** run as P11; see §1.1.
+**Used?** ☑ **Outcome:** run as P11; see Section 1.1.
 
 #### D4. Propose mutations to check the tests
 ```text
@@ -453,8 +453,8 @@ believe no test would fail, say so - that is a gap.
 <paste CourseEnrollmentService.java and the test class names / display names>
 ```
 **Check the answer:** apply each mutation **in a copy of the project** and run `./mvnw test`. Record
-which mutants were caught, as in §4.2. A mutant that survives means a test is missing.
-**Used?** ☑ **Outcome:** run as P12; see §1.1.
+which mutants were caught, as in Section 4.2. A mutant that survives means a test is missing.
+**Used?** ☑ **Outcome:** run as P12; see Section 1.1.
 
 #### D5. Design manual acceptance scenarios
 ```text
@@ -482,8 +482,8 @@ If you find nothing in a category, say "none found" - do not invent issues.
 <paste CourseEnrollmentService.java>
 ```
 **Check the answer:** turn every claimed bug into a failing test **before** fixing it. If you can't
-reproduce it, mark it rejected in §3/§5 and say why.
-**Used?** ☑ **Outcome:** run as P13; see §1.1.
+reproduce it, mark it rejected in Section 3 or Section 5 and say why.
+**Used?** ☑ **Outcome:** run as P13; see Section 1.1.
 
 #### E2. Readability and comments review
 ```text
@@ -499,7 +499,7 @@ Review this repository for: hard-coded secrets or credentials, real personal dat
 sensitive fields, and inputs that could cause unbounded memory use or crashes. Also check that
 the prompts recorded in docs/AI_USAGE_RECORD.md contain no sensitive data.
 ```
-**Used?** ☑ **Outcome:** run as P14; see §1.1.
+**Used?** ☑ **Outcome:** run as P14; see Section 1.1.
 
 ---
 
@@ -545,7 +545,7 @@ what would most improve each one in under 30 minutes.
 <paste deliverables list, ACs, and `tree` output>
 ```
 **Check the answer:** fix anything marked *partial* or *missing*, then re-run the full build and the manual scripts one last time.
-**Used?** ☑ **Outcome:** run as P15; see §1.1.
+**Used?** ☑ **Outcome:** run as P15; see Section 1.1.
 
 ---
 
@@ -561,7 +561,7 @@ what would most improve each one in under 30 minutes.
 | Copy AI-predicted CLI output into docs | Predicted output is often slightly wrong | Run it and paste the real output (D5, F3) |
 | Leave AI involvement out of the record | The assessment explicitly scores candour | Record the prompt, the response summary, your decision and the evidence |
 
-### 6.3 Recording template (copy into §1 and §3 after running a prompt)
+### 6.3 Recording template (copy into Section 1 and Section 3 after running a prompt)
 
 ```text
 | P# | <prompt summary, no sensitive data> | <engineering activity> |

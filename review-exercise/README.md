@@ -53,7 +53,7 @@ Use any mix of these. Real reviewers use all three.
 
 For each change, ask yourself:
 - Is the comment **true**? Check claims like "thread-safe", "cannot be broken", "consistent with DESIGN.md".
-- Does it **contradict** a documented assumption in [DESIGN.md §5](../docs/DESIGN.md) or an acceptance criterion?
+- Does it **contradict** a documented assumption in [DESIGN.md Section 5](../docs/DESIGN.md) or an acceptance criterion?
 - Is it applied **consistently**, in enroll *and* drop *and* promotion?
 - Does it **invent a business rule** that the brief never asked for?
 - Does the new test actually **prove** what its name claims?
@@ -126,7 +126,7 @@ existing test suite passes in full.
 | 6 | Id trimming in `enroll` but **not** in `drop`, and silently contradicts assumption A10 | 2 | No | ❌ Missed |
 | 7 | Invented rule: any same-department course counts as the prerequisite. Breaks the AND rule (A1), and is only applied at enroll | 3 | **Yes** (`allPrerequisitesRequiredByService`) | ⚠️ Test failure observed, root cause not identified |
 | 8 | Drop of an unregistered learner returns `DROPPED`, a false result that violates AC5 | 4 | **Yes** (`repeatedDropIsHarmless`, `dropNeverRegistered`, `scriptedScenario`) | ✅ **Caught**: test failures **and** reproduced by hand (F2) |
-| 9 | Silent switch to skip-and-**retain**, with a false "consistent with DESIGN.md §5" comment | 5 | **Yes** (4 tests, incl. the invariant error) | ⚠️ Test failures observed, root cause not identified |
+| 9 | Silent switch to skip-and-**retain**, with a false "consistent with DESIGN.md Section 5" comment | 5 | **Yes** (4 tests, incl. the invariant error) | ⚠️ Test failures observed, root cause not identified |
 | 10 | Invariant checks removed from `enroll`, with a false "cannot be broken here" justification | 6 | No | ❌ Missed |
 
 **Round 1 score:** 1 fully caught (#8). 2 surfaced by test failures, with the cause not yet identified (#7, #9). 7 missed (#1–#6, #10).

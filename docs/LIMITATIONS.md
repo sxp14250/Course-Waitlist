@@ -5,7 +5,7 @@ catalog, payments and so on) are not listed.
 
 | # | Limitation / risk | Impact | Suggested follow-up |
 |---|---|---|---|
-| 1 | **In-memory only.** State is lost when the process exits. | Not suitable for production use as-is. | Add a persistence adapter with a unique `(offering, learner)` constraint and a waitlist sequence column (see DESIGN §7). |
+| 1 | **In-memory only.** State is lost when the process exits. | Not suitable for production use as-is. | Add a persistence adapter with a unique `(offering, learner)` constraint and a waitlist sequence column (see DESIGN Section 7). |
 | 2 | **Single-JVM locking.** `ReentrantLock` only coordinates threads inside one process. | Two service instances for the same offering would race. | Use database row locks or optimistic versioning once state is persisted. |
 | 3 | **Skip-and-remove is irreversible.** A learner who is ineligible for a short time (for example a grade update still in progress) loses their place in the queue. | Possible fairness complaint. | Product decision: confirm the policy, or add a short grace window. Skipped ids are already returned in `DropResult` so the learner can be notified. |
 | 4 | **No notifications.** Promotions and skips are returned to the caller but not sent anywhere. | The promoted or skipped learner is not informed. | Publish an event built from `DropResult`. |
