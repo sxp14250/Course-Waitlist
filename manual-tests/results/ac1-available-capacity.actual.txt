@@ -1,0 +1,23 @@
+CourseWaitlist CLI - offering CS201-FALL-A (capacity 2, prerequisite CS101)
+Demo learners: L1, L2, L3, L5, L6 (have CS101), L4 (missing CS101)
+Type 'help' for commands.
+> # AC1-1 Course starts empty: 2 seats open
+> status
+Offering : CS201-FALL-A
+Seats    : 0/2 taken (2 open)
+Enrolled : []
+Waitlist : []
+> # AC1-2 Eligible learner L1 enrolls while seats remain -> ENROLLED
+> enroll L1
+[ENROLLED] L1 enrolled in CS201-FALL-A.
+> # AC1-3 Eligible learner L2 takes the last seat -> ENROLLED
+> enroll L2
+[ENROLLED] L2 enrolled in CS201-FALL-A.
+> # AC1-4 Roster shows both, 0 seats open, empty waitlist
+> status
+Offering : CS201-FALL-A
+Seats    : 2/2 taken (0 open)
+Enrolled : [L1, L2]
+Waitlist : []
+> 
+Bye.

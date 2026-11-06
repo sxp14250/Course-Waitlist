@@ -1,0 +1,20 @@
+# Setup: L1, L2 enrolled; L3 waiting
+enroll L1
+enroll L2
+enroll L3
+# AC5-1 First drop of L1 -> DROPPED, L3 promoted
+drop L1
+# AC5-2 Repeated drop of L1 -> NOT_REGISTERED, nobody else promoted
+drop L1
+# AC5-3 Drop of a learner who never registered -> NOT_REGISTERED
+drop L6
+# AC5-4 Unknown learner id -> UNKNOWN_LEARNER / NOT_REGISTERED
+enroll GHOST
+drop GHOST
+# AC5-5 Malformed requests -> usage / unknown-command messages
+enroll
+drop
+drop L1 L2
+register L1
+# AC5-6 State is unchanged by all of the above: [L2, L3], empty waitlist
+status

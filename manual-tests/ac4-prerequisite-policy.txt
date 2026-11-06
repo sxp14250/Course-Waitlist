@@ -1,0 +1,33 @@
+# AC4-1 L4 lacks CS101 and seats are open -> PREREQUISITE_NOT_MET, not enrolled
+learners
+enroll L4
+status
+# Setup: fill the course
+enroll L1
+enroll L2
+# AC4-2 L4 lacks CS101 and course is full -> PREREQUISITE_NOT_MET, NOT waitlisted
+enroll L4
+status
+# Setup: L3 then L5 waiting
+enroll L3
+enroll L5
+# AC4-3 L3 loses CS101 while waiting (simulated transcript change)
+revoke L3 CS101
+# AC4-4 L1 drops: L3 at head is ineligible -> skipped AND removed; L5 promoted
+drop L1
+status
+# AC4-5 L3 regains CS101 and re-requests -> joins the BACK of the waitlist
+grant L3 CS101
+enroll L6
+enroll L3
+status
+# AC4-6 Every waiter ineligible: seat stays open, waitlist empties
+reset
+enroll L1
+enroll L2
+enroll L3
+enroll L5
+revoke L3 CS101
+revoke L5 CS101
+drop L1
+status

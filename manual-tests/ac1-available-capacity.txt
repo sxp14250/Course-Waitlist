@@ -1,0 +1,8 @@
+# AC1-1 Course starts empty: 2 seats open
+status
+# AC1-2 Eligible learner L1 enrolls while seats remain -> ENROLLED
+enroll L1
+# AC1-3 Eligible learner L2 takes the last seat -> ENROLLED
+enroll L2
+# AC1-4 Roster shows both, 0 seats open, empty waitlist
+status

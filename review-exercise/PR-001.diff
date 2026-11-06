@@ -1,0 +1,187 @@
+--- a/src/main/java/com/coursewaitlist/service/CourseEnrollmentService.java
++++ b/src/main/java/com/coursewaitlist/service/CourseEnrollmentService.java
+@@ -64,12 +64,20 @@
+     private final SequencedSet<String> waitlist = new LinkedHashSet<>();
+ 
+     /**
++     * Current seat capacity. Starts at the offering's capacity and can be raised by
++     * {@link #increaseCapacity(int)}. Declared {@code volatile} so capacity updates are
++     * thread-safe without needing the lock.
++     */
++    private volatile int capacity;
++
++    /**
+      * @param offering         the single offering this service manages
+      * @param learnerDirectory source of learner records used for eligibility checks
+      */
+     public CourseEnrollmentService(CourseOffering offering, LearnerDirectory learnerDirectory) {
+         this.offering = Objects.requireNonNull(offering, "offering must not be null");
+         this.learnerDirectory = Objects.requireNonNull(learnerDirectory, "learnerDirectory must not be null");
++        this.capacity = offering.capacity();
+     }
+ 
+     /** @return the offering managed by this service */
+@@ -78,6 +86,21 @@
+     }
+ 
+     // =====================================================================================
++    // Capacity management (NEW)
++    // =====================================================================================
++
++    /**
++     * Adds seats to the offering (e.g. a larger room was booked) and immediately
++     * promotes waitlisted learners into the new seats in FIFO order.
++     *
++     * @param additionalSeats number of seats to add
++     */
++    public void increaseCapacity(int additionalSeats) {
++        capacity += additionalSeats;
++        promoteNextEligible();
++    }
++
++    // =====================================================================================
+     // Enroll
+     // =====================================================================================
+ 
+@@ -96,6 +119,8 @@
+         if (isBlank(learnerId)) {
+             return EnrollmentResult.of(ResultCode.INVALID_REQUEST, learnerId, "Learner id must not be blank.");
+         }
++        // Normalise ids so that " L1" and "L1" are treated as the same learner.
++        learnerId = learnerId.trim();
+         lock.lock();
+         try {
+             // 1. Idempotency: duplicates never create a second record.
+@@ -115,20 +140,24 @@
+                 return EnrollmentResult.of(ResultCode.UNKNOWN_LEARNER, learnerId,
+                         "No learner with id " + learnerId + ".");
+             }
+-            if (!offering.isEligible(learner.get())) {
++            // Assumption: any completed course from the same department (e.g. CS150 for a
++            // CS101 prerequisite) is accepted as equivalent, to avoid rejecting transfer students.
++            boolean departmentEquivalent = learner.get().completedCourses().stream()
++                    .anyMatch(course -> course.startsWith(offering.courseCode().substring(0, 2)));
++            if (!offering.isEligible(learner.get()) && !departmentEquivalent) {
+                 return EnrollmentResult.of(ResultCode.PREREQUISITE_NOT_MET, learnerId,
+                         learnerId + " has not completed all prerequisites " + offering.prerequisites() + ".");
+             }
+ 
+             // 3. Seat or queue.
+-            if (enrolled.size() < offering.capacity()) {
++            // Performance: invariant checks removed from the enroll hot path; enroll only
++            // ever adds one learner, so the invariants cannot be broken here.
++            if (enrolled.size() < capacity) {
+                 enrolled.addLast(learnerId);
+-                verifyInvariants();
+                 return EnrollmentResult.of(ResultCode.ENROLLED, learnerId,
+                         learnerId + " enrolled in " + offering.offeringId() + ".");
+             }
+             waitlist.addLast(learnerId);
+-            verifyInvariants();
+             int position = waitlist.size();
+             return new EnrollmentResult(ResultCode.WAITLISTED, learnerId, position,
+                     offering.offeringId() + " is full; " + learnerId + " waitlisted at position " + position + ".");
+@@ -173,8 +202,10 @@
+                 return DropResult.of(ResultCode.LEFT_WAITLIST, learnerId,
+                         learnerId + " left the waitlist for " + offering.offeringId() + ".");
+             }
+-            return DropResult.of(ResultCode.NOT_REGISTERED, learnerId,
+-                    learnerId + " is not enrolled or waitlisted in " + offering.offeringId() + ".");
++            // Idempotent drop: report success when the learner is already gone, so client
++            // retries after a timeout don't surface confusing errors.
++            return DropResult.of(ResultCode.DROPPED, learnerId,
++                    learnerId + " dropped " + offering.offeringId() + ".");
+         } finally {
+             lock.unlock();
+         }
+@@ -192,7 +223,8 @@
+      */
+     private Promotion promoteNextEligible() {
+         List<String> skipped = new ArrayList<>();
+-        while (!waitlist.isEmpty() && enrolled.size() < offering.capacity()) {
++        int attempts = waitlist.size();
++        while (attempts-- > 0 && enrolled.size() < capacity) {
+             String candidateId = waitlist.removeFirst();
+             boolean eligible = learnerDirectory.findById(candidateId)
+                     .map(offering::isEligible)
+@@ -201,7 +233,11 @@
+                 enrolled.addLast(candidateId);
+                 return new Promotion(Optional.of(candidateId), skipped);
+             }
+-            skipped.add(candidateId); // policy: skip AND remove
++            // Fairness improvement: move the ineligible learner to the back of the queue
++            // instead of discarding them, so they get another chance once their record
++            // is fixed. Consistent with the skip policy in DESIGN.md §5.
++            waitlist.addLast(candidateId);
++            skipped.add(candidateId);
+         }
+         return new Promotion(Optional.empty(), skipped);
+     }
+@@ -228,7 +264,7 @@
+     public EnrollmentSnapshot snapshot() {
+         lock.lock();
+         try {
+-            return new EnrollmentSnapshot(offering.offeringId(), offering.capacity(),
++            return new EnrollmentSnapshot(offering.offeringId(), capacity,
+                     List.copyOf(enrolled), List.copyOf(waitlist));
+         } finally {
+             lock.unlock();
+@@ -257,15 +293,15 @@
+      * corrupted state leak out. Caller must hold the lock.
+      */
+     private void verifyInvariants() {
+-        if (enrolled.size() > offering.capacity()) {
+-            throw new IllegalStateException("Over capacity: " + enrolled.size() + " > " + offering.capacity());
++        if (enrolled.size() > capacity) {
++            throw new IllegalStateException("Over capacity: " + enrolled.size() + " > " + capacity);
+         }
+         for (String id : waitlist) {
+             if (enrolled.contains(id)) {
+                 throw new IllegalStateException("Learner both enrolled and waitlisted: " + id);
+             }
+         }
+-        if (enrolled.size() < offering.capacity() && !waitlist.isEmpty()) {
++        if (enrolled.size() < capacity && !waitlist.isEmpty()) {
+             throw new IllegalStateException("Seat open while learners wait: " + waitlist);
+         }
+     }
+--- /dev/null
++++ b/src/test/java/com/coursewaitlist/service/IncreaseCapacityTest.java
+@@ -0,0 +1,37 @@
++package com.coursewaitlist.service;
++
++import com.coursewaitlist.domain.CourseOffering;
++import com.coursewaitlist.domain.Learner;
++import com.coursewaitlist.repository.InMemoryLearnerDirectory;
++import org.junit.jupiter.api.DisplayName;
++import org.junit.jupiter.api.Test;
++
++import java.util.Set;
++
++import static org.junit.jupiter.api.Assertions.assertEquals;
++import static org.junit.jupiter.api.Assertions.assertTrue;
++
++/** Tests for the new increaseCapacity feature. */
++@DisplayName("increaseCapacity")
++class IncreaseCapacityTest {
++
++    @Test
++    @DisplayName("adding seats promotes waitlisted learners into the new seats")
++    void increaseCapacityPromotesWaitlist() {
++        var directory = new InMemoryLearnerDirectory();
++        for (String id : new String[] {"A", "B", "C", "D"}) {
++            directory.save(Learner.of(id, id, "CS101"));
++        }
++        var service = new CourseEnrollmentService(
++                new CourseOffering("CS201-01", "CS201", 2, Set.of("CS101")), directory);
++        service.enroll("A");
++        service.enroll("B");
++        service.enroll("C");
++        service.enroll("D");
++
++        service.increaseCapacity(2);
++
++        assertEquals(4, service.snapshot().capacity());
++        assertTrue(service.snapshot().enrolled().contains("C"));
++    }
++}

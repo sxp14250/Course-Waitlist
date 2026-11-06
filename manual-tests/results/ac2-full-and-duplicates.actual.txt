@@ -1,0 +1,30 @@
+CourseWaitlist CLI - offering CS201-FALL-A (capacity 2, prerequisite CS101)
+Demo learners: L1, L2, L3, L5, L6 (have CS101), L4 (missing CS101)
+Type 'help' for commands.
+> # Setup: fill both seats
+> enroll L1
+[ENROLLED] L1 enrolled in CS201-FALL-A.
+> enroll L2
+[ENROLLED] L2 enrolled in CS201-FALL-A.
+> # AC2-1 Course is full: eligible L3 joins waitlist at position 1 -> WAITLISTED
+> enroll L3
+[WAITLISTED] CS201-FALL-A is full; L3 waitlisted at position 1.
+> # AC2-2 Eligible L5 joins behind L3 at position 2 -> WAITLISTED
+> enroll L5
+[WAITLISTED] CS201-FALL-A is full; L5 waitlisted at position 2.
+> # AC2-3 Duplicate request from an enrolled learner -> ALREADY_ENROLLED
+> enroll L1
+[ALREADY_ENROLLED] L1 is already enrolled in CS201-FALL-A.
+> # AC2-4 Duplicate request from a waitlisted learner keeps position 1 -> ALREADY_WAITLISTED
+> enroll L3
+[ALREADY_WAITLISTED] L3 is already on the waitlist at position 1.
+> enroll L3
+[ALREADY_WAITLISTED] L3 is already on the waitlist at position 1.
+> # AC2-5 No duplicate records: each learner appears exactly once
+> status
+Offering : CS201-FALL-A
+Seats    : 2/2 taken (0 open)
+Enrolled : [L1, L2]
+Waitlist : [L3, L5]
+> 
+Bye.

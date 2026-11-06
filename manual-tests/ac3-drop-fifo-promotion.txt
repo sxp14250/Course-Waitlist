@@ -1,0 +1,19 @@
+# Setup: L1, L2 enrolled; L3, L5, L6 waiting in that order
+enroll L1
+enroll L2
+enroll L3
+enroll L5
+enroll L6
+status
+# AC3-1 Enrolled L1 drops -> seat opens, earliest waiter L3 promoted
+drop L1
+status
+# AC3-2 Enrolled L2 drops -> next in line L5 promoted (FIFO)
+drop L2
+status
+# AC3-3 Waitlisted L6 leaves the queue -> LEFT_WAITLIST, nobody promoted
+drop L6
+status
+# AC3-4 Enrolled L3 drops with an empty waitlist -> seat simply opens
+drop L3
+status

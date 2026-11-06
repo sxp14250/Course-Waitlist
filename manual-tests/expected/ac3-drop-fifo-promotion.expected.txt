@@ -1,0 +1,53 @@
+CourseWaitlist CLI - offering CS201-FALL-A (capacity 2, prerequisite CS101)
+Demo learners: L1, L2, L3, L5, L6 (have CS101), L4 (missing CS101)
+Type 'help' for commands.
+> # Setup: L1, L2 enrolled; L3, L5, L6 waiting in that order
+> enroll L1
+[ENROLLED] L1 enrolled in CS201-FALL-A.
+> enroll L2
+[ENROLLED] L2 enrolled in CS201-FALL-A.
+> enroll L3
+[WAITLISTED] CS201-FALL-A is full; L3 waitlisted at position 1.
+> enroll L5
+[WAITLISTED] CS201-FALL-A is full; L5 waitlisted at position 2.
+> enroll L6
+[WAITLISTED] CS201-FALL-A is full; L6 waitlisted at position 3.
+> status
+Offering : CS201-FALL-A
+Seats    : 2/2 taken (0 open)
+Enrolled : [L1, L2]
+Waitlist : [L3, L5, L6]
+> # AC3-1 Enrolled L1 drops -> seat opens, earliest waiter L3 promoted
+> drop L1
+[DROPPED] L1 dropped CS201-FALL-A. Promoted L3 from the waitlist.
+> status
+Offering : CS201-FALL-A
+Seats    : 2/2 taken (0 open)
+Enrolled : [L2, L3]
+Waitlist : [L5, L6]
+> # AC3-2 Enrolled L2 drops -> next in line L5 promoted (FIFO)
+> drop L2
+[DROPPED] L2 dropped CS201-FALL-A. Promoted L5 from the waitlist.
+> status
+Offering : CS201-FALL-A
+Seats    : 2/2 taken (0 open)
+Enrolled : [L3, L5]
+Waitlist : [L6]
+> # AC3-3 Waitlisted L6 leaves the queue -> LEFT_WAITLIST, nobody promoted
+> drop L6
+[LEFT_WAITLIST] L6 left the waitlist for CS201-FALL-A.
+> status
+Offering : CS201-FALL-A
+Seats    : 2/2 taken (0 open)
+Enrolled : [L3, L5]
+Waitlist : []
+> # AC3-4 Enrolled L3 drops with an empty waitlist -> seat simply opens
+> drop L3
+[DROPPED] L3 dropped CS201-FALL-A. Seat is now open.
+> status
+Offering : CS201-FALL-A
+Seats    : 1/2 taken (1 open)
+Enrolled : [L5]
+Waitlist : []
+> 
+Bye.

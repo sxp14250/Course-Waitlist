@@ -1,0 +1,84 @@
+CourseWaitlist CLI - offering CS201-FALL-A (capacity 2, prerequisite CS101)
+Demo learners: L1, L2, L3, L5, L6 (have CS101), L4 (missing CS101)
+Type 'help' for commands.
+> # AC4-1 L4 lacks CS101 and seats are open -> PREREQUISITE_NOT_MET, not enrolled
+> learners
+Learners (prerequisites: [CS101])
+  L1  Ada      [CS101]            eligible
+  L2  Grace    [CS101]            eligible
+  L3  Linus    [CS101, MATH100]   eligible
+  L4  Alan     []                 NOT eligible
+  L5  Barbara  [CS101]            eligible
+  L6  Edsger   [CS101]            eligible
+> enroll L4
+[PREREQUISITE_NOT_MET] L4 has not completed all prerequisites [CS101].
+> status
+Offering : CS201-FALL-A
+Seats    : 0/2 taken (2 open)
+Enrolled : []
+Waitlist : []
+> # Setup: fill the course
+> enroll L1
+[ENROLLED] L1 enrolled in CS201-FALL-A.
+> enroll L2
+[ENROLLED] L2 enrolled in CS201-FALL-A.
+> # AC4-2 L4 lacks CS101 and course is full -> PREREQUISITE_NOT_MET, NOT waitlisted
+> enroll L4
+[PREREQUISITE_NOT_MET] L4 has not completed all prerequisites [CS101].
+> status
+Offering : CS201-FALL-A
+Seats    : 2/2 taken (0 open)
+Enrolled : [L1, L2]
+Waitlist : []
+> # Setup: L3 then L5 waiting
+> enroll L3
+[WAITLISTED] CS201-FALL-A is full; L3 waitlisted at position 1.
+> enroll L5
+[WAITLISTED] CS201-FALL-A is full; L5 waitlisted at position 2.
+> # AC4-3 L3 loses CS101 while waiting (simulated transcript change)
+> revoke L3 CS101
+[TRANSCRIPT] CS101 revoked for L3; now [MATH100].
+> # AC4-4 L1 drops: L3 at head is ineligible -> skipped AND removed; L5 promoted
+> drop L1
+[DROPPED] L1 dropped CS201-FALL-A. Removed ineligible from waitlist: [L3]. Promoted L5 from the waitlist.
+> status
+Offering : CS201-FALL-A
+Seats    : 2/2 taken (0 open)
+Enrolled : [L2, L5]
+Waitlist : []
+> # AC4-5 L3 regains CS101 and re-requests -> joins the BACK of the waitlist
+> grant L3 CS101
+[TRANSCRIPT] CS101 granted for L3; now [CS101, MATH100].
+> enroll L6
+[WAITLISTED] CS201-FALL-A is full; L6 waitlisted at position 1.
+> enroll L3
+[WAITLISTED] CS201-FALL-A is full; L3 waitlisted at position 2.
+> status
+Offering : CS201-FALL-A
+Seats    : 2/2 taken (0 open)
+Enrolled : [L2, L5]
+Waitlist : [L6, L3]
+> # AC4-6 Every waiter ineligible: seat stays open, waitlist empties
+> reset
+[RESET] Demo state restored: CS201-FALL-A is empty.
+> enroll L1
+[ENROLLED] L1 enrolled in CS201-FALL-A.
+> enroll L2
+[ENROLLED] L2 enrolled in CS201-FALL-A.
+> enroll L3
+[WAITLISTED] CS201-FALL-A is full; L3 waitlisted at position 1.
+> enroll L5
+[WAITLISTED] CS201-FALL-A is full; L5 waitlisted at position 2.
+> revoke L3 CS101
+[TRANSCRIPT] CS101 revoked for L3; now [MATH100].
+> revoke L5 CS101
+[TRANSCRIPT] CS101 revoked for L5; now [].
+> drop L1
+[DROPPED] L1 dropped CS201-FALL-A. Removed ineligible from waitlist: [L3, L5]. Seat is now open.
+> status
+Offering : CS201-FALL-A
+Seats    : 1/2 taken (1 open)
+Enrolled : [L2]
+Waitlist : []
+> 
+Bye.

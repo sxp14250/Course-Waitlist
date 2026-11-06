@@ -1,0 +1,52 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------------< com.coursewaitlist:course-waitlist >-----------------
+[INFO] Building CourseWaitlist 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ course-waitlist ---
+[INFO] Deleting C:\Users\sande\Documents\AI-Assessment\target
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ course-waitlist ---
+[INFO] skip non existing resourceDirectory C:\Users\sande\Documents\AI-Assessment\src\main\resources
+[INFO] 
+[INFO] --- compiler:3.16.0:compile (default-compile) @ course-waitlist ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 12 source files with javac [debug release 27] to target\classes
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ course-waitlist ---
+[INFO] skip non existing resourceDirectory C:\Users\sande\Documents\AI-Assessment\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.16.0:testCompile (default-testCompile) @ course-waitlist ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 4 source files with javac [debug release 27] to target\test-classes
+[INFO] 
+[INFO] --- surefire:3.6.1:test (default-test) @ course-waitlist ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running CommandProcessor
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.127 s -- in CommandProcessor
+[INFO] Running Domain model
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.017 s -- in Domain model
+[INFO] Running CourseEnrollmentService under concurrency
+[INFO] Tests run: 90, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.507 s -- in CourseEnrollmentService under concurrency
+[INFO] Running CourseEnrollmentService
+[INFO] Tests run: 34, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.091 s -- in CourseEnrollmentService
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 137, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.5.1:jar (default-jar) @ course-waitlist ---
+[INFO] Building jar: C:\Users\sande\Documents\AI-Assessment\target\course-waitlist-1.0.0.jar
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  4.253 s
+[INFO] Finished at: 2026-11-05T23:07:48-06:00
+[INFO] ------------------------------------------------------------------------
